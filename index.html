@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>КПТ Компас — онлайн тест</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #e5edff;
+      --accent: #16a34a;
+      --bg: #f4f4f5;
+      --card-bg: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --danger: #ef4444;
+      --danger-bg: #fee2e2;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      color: var(--text);
+    }
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 16px 12px 32px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 18px 16px;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+      border: 1px solid var(--border);
+    }
+    .title {
+      font-size: 1.4rem;
+      margin: 0 0 6px;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin: 0 0 10px;
+    }
+    .disclaimer {
+      margin: 10px 0 14px;
+      font-size: 0.8rem;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--danger-bg);
+      border: 1px solid #fecaca;
+      color: #7f1d1d;
+    }
+    .progress-wrapper {
+      margin-bottom: 12px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+    .progress-inner {
+      height: 100%;
+      width: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.25s ease;
+    }
+    .question-index {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .question-text {
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+    .scale {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .scale label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .scale input[type="radio"] {
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .scale label:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+    .scale label.selected {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+    .scale-value {
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--primary);
+    }
+    .scale-caption {
+      text-align: center;
+      white-space: pre-line;
+    }
+    .error {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: var(--danger-bg);
+      color: #7f1d1d;
+      border: 1px solid #fecaca;
+      display: none;
+    }
+    .error.show { display: block; }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .nav-left, .nav-right {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: var(--text);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: #d4d4d8;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: #e5e7eb;
+    }
+    .hidden { display: none; }
+    .results-title {
+      font-size: 1rem;
+      margin: 0 0 8px;
+    }
+    .result-item {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 6px;
+      background: #f9fafb;
+      font-size: 0.9rem;
+    }
+    .result-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .result-name {
+      font-weight: 600;
+    }
+    .result-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+    .result-bar-inner {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      width: 0;
+      transition: width 0.5s ease;
+    }
+    .results-note {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .projective {
+      margin-top: 12px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .proj-label {
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 60px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      resize: vertical;
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    @media (max-width: 600px) {
+      .card { padding: 14px; }
+      .title { font-size: 1.2rem; }
+      .scale { gap: 4px; }
+      .scale label { padding: 5px 2px; }
+      button { flex: 1; justify-content: center; }
+      .nav { flex-direction: column-reverse; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="card" id="test-card">
+      <h1 class="title">КПТ Компас</h1>
+      <p class="subtitle">Короткий тест-помощник для выбора направления КПТ, которое может подойти вам по стилю и запросу.</p>
+      <div class="disclaimer">
+        Этот тест носит информационный и рекомендательный характер, не является диагнозом и не заменяет консультацию специалиста.
+      </div>
+
+      <div class="progress-wrapper">
+        <div class="progress-label">
+          <span id="progress-text">Вопрос 1 из 45</span>
+          <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-inner" id="progress-inner"></div>
+        </div>
+      </div>
+
+      <div id="question-block">
+        <div class="question-index" id="question-index"></div>
+        <div class="question-text" id="question-text"></div>
+        <div class="scale" id="scale-container"></div>
+        <div class="error" id="error-message"></div>
+      </div>
+
+      <div class="nav">
+        <div class="nav-left">
+          <button class="btn-secondary" id="prev-btn">← Назад</button>
+          <button class="btn-ghost" id="skip-btn">Пропустить</button>
+        </div>
+        <div class="nav-right">
+          <button class="btn-primary" id="next-btn">Далее →</button>
+          <button class="btn-primary hidden" id="finish-btn">Показать результат</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card hidden" id="results-card">
+      <h2 class="results-title">Ваши ориентировочные рекомендации</h2>
+      <p class="subtitle">Ниже — три направления КПТ, которые лучше всего совпали с вашими ответами.</p>
+      <div id="results-list"></div>
+      <div class="results-note">
+        Используйте эти результаты как повод обсудить с терапевтом, какой формат работы вам сейчас будет максимально полезен.
+      </div>
+
+      <div class="projective">
+        <div class="proj-label">1. Когда мне особенно тяжело, я обычно…</div>
+        <textarea placeholder="Необязательно для заполнения"></textarea>
+        <div class="proj-label" style="margin-top:6px;">2. Мои трудности больше всего похожи на…</div>
+        <textarea placeholder="Например: волны, тупик, длинную дорогу и т.д."></textarea>
+        <div class="proj-label" style="margin-top:6px;">3. Идеальная для меня терапия — это…</div>
+        <textarea placeholder="Опишите в двух–трёх фразах"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const approaches = [
+      { key: "BT",  name: "Классическая поведенческая терапия",             short: "BT",  icon: "🎯" },
+      { key: "CT",  name: "Когнитивная терапия (Бека)",                      short: "CT",  icon: "💭" },
+      { key: "REBT",name: "Рационально-эмотивно-поведенческая терапия",      short: "REBT",icon: "⚖️" },
+      { key: "BA",  name: "Поведенческая активация",                         short: "BA",  icon: "🚀" },
+      { key: "ACT", name: "Терапия принятия и ответственности",             short: "ACT", icon: "🧘" },
+      { key: "DBT", name: "Диалектическая поведенческая терапия",           short: "DBT", icon: "⚡" },
+      { key: "MBCT",name: "КПТ, основанная на осознанности",                short: "MBCT",icon: "🕉️" },
+      { key: "ST",  name: "Схема-терапия",                                  short: "ST",  icon: "🎨" },
+      { key: "CFT", name: "Терапия, фокусированная на сострадании",         short: "CFT", icon: "❤️" },
+      { key: "MCT", name: "Метакогнитивная терапия",                        short: "MCT", icon: "🔍" },
+    ];
+
+    const questions = [
+      { id: 1,  text: "Когда у меня появляется тревожная мысль, я стараюсь разобрать её по фактам: «правда это или нет».", weights: { BT:0, CT:2, REBT:1, BA:0, ACT:0, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 2,  text: "Мне важно находить более рациональное объяснение своим негативным мыслям.",                         weights: { BT:0, CT:2, REBT:2, BA:0, ACT:0, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 3,  text: "Я часто пытаюсь «переключить» свои мысли силой воли, чтобы не думать о неприятном.",                weights: { BT:0, CT:1, REBT:1, BA:0, ACT:-1,DBT:0, MBCT:-1,ST:0, CFT:0, MCT:-1} },
+      { id: 4,  text: "Я могу наблюдать за своими мыслями со стороны, не обязательно веря им.",                             weights: { BT:0, CT:0, REBT:0, BA:0, ACT:2, DBT:0, MBCT:2, ST:0, CFT:0, MCT:2 } },
+      { id: 5,  text: "Если мысли кажутся неконтролируемыми, я начинаю сильно тревожиться из-за этого.",                   weights: { BT:0, CT:0, REBT:0, BA:0, ACT:1, DBT:0, MBCT:0, ST:0, CFT:0, MCT:2 } },
+      { id: 6,  text: "Мне важно понять, откуда взялись мои привычные мысли и установки (например, из детства).",          weights: { BT:0, CT:1, REBT:0, BA:0, ACT:0, DBT:0, MBCT:0, ST:2, CFT:1, MCT:0 } },
+      { id: 7,  text: "В сложных ситуациях я больше анализирую, чем опираюсь на ощущения и интуицию.",                      weights: { BT:0, CT:2, REBT:1, BA:0, ACT:0, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 8,  text: "Я часто «застреваю» в раздумьях о том, что сделал не так.",                                          weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:0, MBCT:0, ST:0, CFT:0, MCT:2 } },
+      { id: 9,  text: "Мне легче действовать по чёткому плану, чем импровизировать по ситуации.",                           weights: { BT:1, CT:1, REBT:0, BA:1, ACT:0, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 10, text: "Мне важно не столько менять мысли, сколько научиться с ними по-другому обходиться.",                weights: { BT:0, CT:0, REBT:0, BA:0, ACT:2, DBT:0, MBCT:2, ST:0, CFT:0, MCT:2 } },
+      { id: 11, text: "Мои эмоции часто бывают очень интенсивными и «накрывают» меня.",                                     weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:2, MBCT:0, ST:1, CFT:0, MCT:0 } },
+      { id: 12, text: "В трудных ситуациях я скорее постараюсь не чувствовать, чем позволю эмоциям проявиться.",           weights: { BT:0, CT:0, REBT:0, BA:0, ACT:1, DBT:1, MBCT:1, ST:0, CFT:0, MCT:0 } },
+      { id: 13, text: "Я часто ругаю и критикую себя за ошибки.",                                                           weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:0, MBCT:0, ST:1, CFT:2, MCT:0 } },
+      { id: 14, text: "Мне нелегко отнестись к себе с пониманием и сочувствием, когда что-то не получается.",              weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:0, MBCT:0, ST:1, CFT:2, MCT:0 } },
+      { id: 15, text: "Когда мне плохо, я чувствую сильное желание немедленно «взять себя в руки и контролировать эмоции».",weights:{BT:0,CT:0,REBT:1,BA:0,ACT:-1,DBT:0,MBCT:0,ST:0,CFT:0,MCT:0} },
+      { id: 16, text: "Иногда я совершаю импульсивные поступки под влиянием эмоций, о которых потом жалею.",               weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:2, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 17, text: "Мне сложно понять, что именно я сейчас чувствую.",                                                  weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:1, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 18, text: "Стыд и чувство вины — частые спутники моего внутреннего диалога с собой.",                         weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:0, MBCT:0, ST:1, CFT:2, MCT:0 } },
+      { id: 19, text: "В тяжёлые периоды я откладываю дела и избегаю активностей, которые раньше приносили удовольствие.",weights: { BT:0, CT:0, REBT:0, BA:2, ACT:1, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 20, text: "Даже когда нет настроения, я могу заставить себя делать то, что считаю важным.",                    weights: { BT:0, CT:0, REBT:0, BA:2, ACT:1, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 21, text: "В первую очередь я стараюсь найти конкретные шаги и действия, которые помогут справиться.",         weights: { BT:2, CT:1, REBT:0, BA:1, ACT:0, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 22, text: "Я часто выбираю «переждать» или отвлечься, а не делать что-то по-новому.",                          weights: { BT:0, CT:0, REBT:0, BA:-1,ACT:-1,DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 23, text: "Мне помогает, когда у меня есть расписание или список дел на день.",                               weights: { BT:2, CT:1, REBT:0, BA:1, ACT:0, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 24, text: "В сложной ситуации я больше разговариваю с другими, чем действую сам.",                            weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:1, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 25, text: "Внутреннее состояние почти всегда сильно влияет на то, насколько я активен(на) в жизни.",          weights: { BT:0, CT:0, REBT:0, BA:1, ACT:1, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 26, text: "Я довольно чётко понимаю, что для меня по-настоящему важно в жизни.",                              weights: { BT:0, CT:0, REBT:0, BA:0, ACT:2, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 27, text: "Часто мои реальные действия не совпадают с тем, что я считаю для себя важным.",                    weights: { BT:0, CT:0, REBT:0, BA:0, ACT:2, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 28, text: "Мне ближе идея «научиться жить с трудностями», чем «полностью избавиться от неприятных переживаний».",weights:{BT:0,CT:0,REBT:0,BA:0,ACT:2,DBT:0,MBCT:1,ST:0,CFT:0,MCT:1} },
+      { id: 29, text: "Я плохо переношу чувство внутреннего несовершенства и стремлюсь быть «правильным человеком».",     weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:0, MBCT:0, ST:2, CFT:1, MCT:0 } },
+      { id: 30, text: "Для меня важно, чтобы в жизни был какой-то смысл, который помогает выдерживать трудности.",        weights: { BT:0, CT:0, REBT:0, BA:0, ACT:2, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 31, text: "Мне сложно ясно обозначать и защищать свои границы в отношениях.",                                 weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:1, MBCT:0, ST:2, CFT:0, MCT:0 } },
+      { id: 32, text: "В отношениях я часто колеблюсь между сильной близостью и желанием отдалиться.",                   weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:1, MBCT:0, ST:2, CFT:0, MCT:0 } },
+      { id: 33, text: "В терапии мне хотелось бы, чтобы специалист давал чёткие рекомендации и домашние задания.",        weights: { BT:1, CT:2, REBT:1, BA:1, ACT:0, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 34, text: "В терапии для меня важно больше понимать свои глубинные причины и паттерны, чем просто менять поведение.",weights:{BT:0,CT:1,REBT:0,BA:0,ACT:0,DBT:0,MBCT:0,ST:2,CFT:0,MCT:0} },
+      { id: 35, text: "Мне ближе формат, где терапевт тёплый и принимающий, чем строгий и директивный.",                  weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:0, MBCT:0, ST:1, CFT:2, MCT:0 } },
+      { id: 36, text: "Мне важно, чтобы на сессиях меня обучали конкретным навыкам (регуляция эмоций, коммуникация, стрессоустойчивость).",weights:{BT:1,CT:0,REBT:0,BA:0,ACT:0,DBT:2,MBCT:0,ST:0,CFT:0,MCT:0} },
+      { id: 37, text: "Я готов(а) регулярно выполнять задания между сессиями, если вижу в этом смысл.",                   weights: { BT:1, CT:1, REBT:0, BA:1, ACT:1, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 38, text: "Я предпочитаю, чтобы терапия была достаточно структурированной и понятной по шагам.",             weights: { BT:2, CT:1, REBT:0, BA:1, ACT:0, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 39, text: "Я часто испытываю беспокойство о будущем, даже когда объективных причин не так много.",           weights: { BT:0, CT:0, REBT:0, BA:0, ACT:1, DBT:0, MBCT:0, ST:0, CFT:0, MCT:2 } },
+      { id: 40, text: "У меня бывают приступы сильной тревоги или паники.",                                              weights: { BT:0, CT:1, REBT:0, BA:0, ACT:1, DBT:0, MBCT:0, ST:0, CFT:0, MCT:1 } },
+      { id: 41, text: "Периоды пониженного настроения, апатии или потери интереса к жизни случаются у меня регулярно.",  weights: { BT:0, CT:0, REBT:0, BA:2, ACT:1, DBT:0, MBCT:0, ST:0, CFT:0, MCT:0 } },
+      { id: 42, text: "Я замечаю, что похожие проблемы в отношениях или работе повторяются у меня годами.",              weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:0, MBCT:0, ST:2, CFT:1, MCT:0 } },
+      { id: 43, text: "Сложные эмоции часто приводят к конфликтам или резким поступкам с моей стороны.",                 weights: { BT:0, CT:0, REBT:0, BA:0, ACT:0, DBT:2, MBCT:0, ST:1, CFT:0, MCT:0 } },
+      { id: 44, text: "Мои трудности больше связаны с внутренними переживаниями (мыслями и чувствами), чем с внешними обстоятельствами.",weights:{BT:0,CT:0,REBT:0,BA:0,ACT:1,DBT:0,MBCT:1,ST:0,CFT:0,MCT:1} },
+      { id: 45, text: "Сейчас моя основная цель — не просто «выжить», а как-то изменить качество своей жизни к лучшему.", weights:{BT:0,CT:0,REBT:0,BA:1,ACT:2,DBT:0,MBCT:0,ST:0,CFT:0,MCT:0} },
+    ];
+
+    const totalQuestions = questions.length;
+    const questionIndexEl = document.getElementById("question-index");
+    const questionTextEl = document.getElementById("question-text");
+    const scaleContainerEl = document.getElementById("scale-container");
+    const errorMessageEl = document.getElementById("error-message");
+    const progressTextEl = document.getElementById("progress-text");
+    const progressPercentEl = document.getElementById("progress-percent");
+    const progressInnerEl = document.getElementById("progress-inner");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const skipBtn = document.getElementById("skip-btn");
+    const finishBtn = document.getElementById("finish-btn");
+    const testCard = document.getElementById("test-card");
+    const resultsCard = document.getElementById("results-card");
+    const resultsListEl = document.getElementById("results-list");
+
+    let currentIndex = 0;
+    const answers = new Array(totalQuestions).fill(null);
+
+    function renderQuestion(index) {
+      const q = questions[index];
+      questionIndexEl.textContent = `Вопрос ${index + 1} из ${totalQuestions}`;
+      questionTextEl.textContent = q.text;
+      scaleContainerEl.innerHTML = "";
+      errorMessageEl.classList.remove("show");
+
+      const labelsText = [
+        "Совершенно\nне согласен",
+        "Скорее\nне согласен",
+        "Затрудняюсь\nответить",
+        "Скорее\nсогласен",
+        "Полностью\nсогласен",
+      ];
+
+      for (let i = 1; i <= 5; i++) {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "answer";
+        input.value = i;
+
+        if (answers[currentIndex] === i) {
+          input.checked = true;
+          label.classList.add("selected");
+        }
+
+        input.addEventListener("change", function () {
+          document.querySelectorAll(".scale label").forEach(l => l.classList.remove("selected"));
+          label.classList.add("selected");
+          answers[currentIndex] = parseInt(this.value, 10);
+          updateProgress();
+          errorMessageEl.classList.remove("show");
+        });
+
+        const valueSpan = document.createElement("span");
+        valueSpan.className = "scale-value";
+        valueSpan.textContent = i.toString();
+
+        const captionSpan = document.createElement("span");
+        captionSpan.className = "scale-caption";
+        captionSpan.textContent = labelsText[i - 1];
+
+        label.appendChild(input);
+        label.appendChild(valueSpan);
+        label.appendChild(captionSpan);
+        scaleContainerEl.appendChild(label);
+      }
+
+      updateProgress();
+      updateButtons();
+    }
+
+    function updateProgress() {
+      const answeredCount = answers.filter(a => a !== null).length;
+      const progress = Math.round((answeredCount / totalQuestions) * 100);
+      progressTextEl.textContent = `Вопрос ${currentIndex + 1} из ${totalQuestions}`;
+      progressPercentEl.textContent = `${progress}%`;
+      const pos = (currentIndex / (totalQuestions - 1)) * 100;
+      progressInnerEl.style.width = `${Math.max(progress, pos)}%`;
+    }
+
+    function updateButtons() {
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.classList.toggle("hidden", currentIndex >= totalQuestions - 1);
+      finishBtn.classList.toggle("hidden", currentIndex < totalQuestions - 1);
+      skipBtn.disabled = currentIndex >= totalQuestions;
+    }
+
+    function goToQuestion(targetIndex) {
+      if (targetIndex < 0 || targetIndex >= totalQuestions) return;
+      currentIndex = targetIndex;
+      renderQuestion(currentIndex);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function computeScores() {
+      const scores = {};
+      approaches.forEach(a => scores[a.key] = 0);
+
+      questions.forEach((q, idx) => {
+        const answer = answers[idx];
+        if (answer === null) return;
+        const centered = answer - 3;
+        for (const key in q.weights) {
+          const w = q.weights[key] || 0;
+          scores[key] += centered * w;
+        }
+      });
+
+      const values = Object.values(scores);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const normalized = {};
+
+      approaches.forEach(a => {
+        if (max === min) {
+          normalized[a.key] = 50;
+        } else {
+          const val = scores[a.key];
+          normalized[a.key] = Math.round(((val - min) / (max - min)) * 100);
+        }
+      });
+
+      return normalized;
+    }
+
+    function showResults() {
+      const norm = computeScores();
+      const sorted = approaches
+        .map(a => ({ ...a, score: norm[a.key] }))
+        .sort((a, b) => b.score - a.score);
+      const top3 = sorted.slice(0, 3);
+
+      resultsListEl.innerHTML = "";
+      top3.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "result-item";
+        row.innerHTML = `
+          <div class="result-line">
+            <span class="result-name">${item.icon} ${item.name}</span>
+            <span>${item.score}%</span>
+          </div>
+          <div class="result-bar">
+            <div class="result-bar-inner" style="width:0"></div>
+          </div>
+        `;
+        resultsListEl.appendChild(row);
+        setTimeout(() => {
+          const bar = row.querySelector(".result-bar-inner");
+          bar.style.width = item.score + "%";
+        }, 80);
+      });
+
+      document.getElementById("test-card").classList.add("hidden");
+      document.getElementById("results-card").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    prevBtn.addEventListener("click", () => {
+      errorMessageEl.classList.remove("show");
+      goToQuestion(currentIndex - 1);
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (answers[currentIndex] === null) {
+        errorMessageEl.textContent = "Пожалуйста, выберите вариант ответа или нажмите «Пропустить».";
+        errorMessageEl.classList.add("show");
+        return;
+      }
+      goToQuestion(currentIndex + 1);
+    });
+
+    skipBtn.addEventListener("click", () => {
+      errorMessageEl.classList.remove("show");
+      goToQuestion(currentIndex + 1);
+    });
+
+    finishBtn.addEventListener("click", () => {
+      showResults();
+    });
+
+    renderQuestion(currentIndex);
+  </script>
+</body>
+</html>
