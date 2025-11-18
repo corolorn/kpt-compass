@@ -259,6 +259,36 @@
       button { flex: 1; justify-content: center; }
       .nav { flex-direction: column-reverse; }
     }
+    @media (max-width: 420px) {
+  .scale {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .scale label {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 6px 8px;
+  }
+
+  .scale input[type="radio"] {
+    margin-right: 6px;
+  }
+
+  .scale-value {
+    margin-right: 8px;
+    font-size: 0.8rem;
+  }
+
+  .scale-caption {
+    text-align: left;
+    white-space: normal;
+    font-size: 0.8rem;
+  }
+}
+
   </style>
 </head>
 <body>
